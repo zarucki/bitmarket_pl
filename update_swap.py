@@ -103,6 +103,8 @@ def checkIfShouldUpdateSwapRate():
 				logger.info('current rate: ' + str(currentRate) + ' is not ok. Changeing to: ' + str(newRate))
 				closeSwapPosition(currentSwapPosition['id'])
 
+				time.sleep(2)
+
 				logger.info('swap position ' + str(currentSwapPosition['id']) + ' earned: ' + earningsAsString + ' with amount: ' + str(currentAmount))
 				openSwapPosition(currentAmount + earnings, newRate)
 				totalEarnings = totalEarnings + earnings
