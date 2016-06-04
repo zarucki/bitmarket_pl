@@ -54,6 +54,7 @@ def bitMarketPlApiCall(method, params = {}):
 	}
 
 	request_response = requests.post('https://www.bitmarket.pl/api2/', data = postParamsAsString, headers = postHeaders)
+	logger.debug(request_response)
 	if request_response.status_code == 200:
 		asJson = request_response.json()
 		#print 'success', asJson['limit'], '; serverTime =', asJson['time']
@@ -65,18 +66,24 @@ def bitMarketPlApiCall(method, params = {}):
 
 def closeSwapPosition(id):
 	logger.info('closing swap position: ' + str(id))
-	logger.info(bitMarketPlApiCall('swapClose', { 'id': id, 'currency': 'BTC' }).text)
+	logger.debug(bitMarketPlApiCall('swapClose', { 'id': id, 'currency': 'BTC' }).text)
 
 def openSwapPosition(amount, rate):
 	logger.info('Opening new swap position. Amount: ' + str(amount) + ' BTC, Rate: ' + str(rate) + ' %')
-	logger.info(bitMarketPlApiCall('swapOpen', { 'amount': amount, 'rate': rate, 'currency': 'BTC' }))
+	logger.debug(bitMarketPlApiCall('swapOpen', { 'amount': amount, 'rate': rate, 'currency': 'BTC' }))
 
 def checkIfShouldUpdateSwapRate():
 	totalEarnings = 0
 	while True:
 		try:
 			currentCutOff = getCurrentCutOff()
-			currentSwapPosition = bitMarketPlApiCall('swapList', { 'currency': 'BTC' }).json()['data'][0]
+			currentSwapPositions = bitMarketPlApiCall('swapList', { 'currency': 'BTC' }).json()['data']
+			if len(currentSwapPositions) == 0:
+				logger.warn('No swap position to maximize, create a position.')
+				time.sleep(sleepTimeBetweenChecks)
+				continue
+
+			currentSwapPosition = currentSwapPositions[0]
 
 			maxProfitableRate = currentCutOff - 0.01
 
