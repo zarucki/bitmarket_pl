@@ -98,7 +98,7 @@ def checkIfShouldUpdateSwapRate():
 				openSwapPosition(currentAmount + earnings, maxProfitableRate)
 				totalEarnings = totalEarnings + earnings
 			else:
-				logger.info('current rate: ' + str(currentRate) + ' is optimal. Earnings: ' + earningsAsString + ' BTC + Total earnings: ' + '{0:f}'.format(totalEarnings + earnings))
+				logger.info('current rate: ' + str(currentRate) + ' is optimal. Earnings: ' + earningsAsString + ' BTC. Total earnings: ' + '{0:f}'.format(totalEarnings + earnings))
 
 		except Exception as ex:
 			logger.error(ex)
