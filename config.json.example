@@ -1,0 +1,5 @@
+{
+	"public_api_key": "<your_public_api_key_issued_by_bitmarket_pl>",
+	"secret_api_key": "<your_secret_api_key_issued_by_bitmarket_pl>",
+	"sleep_between_checks_in_seconds": 60
+}
