@@ -8,9 +8,9 @@ import traceback
 import logging
 from pprint import pprint
 
-logger = logging.getLogger('swap_update')
+logger = logging.getLogger('update_swap')
 logger.setLevel(logging.INFO)
-fh = logging.FileHandler('swap_update.log')
+fh = logging.FileHandler('update_swap.log')
 fh.setLevel(logging.INFO)
 ch = logging.StreamHandler()
 ch.setLevel(logging.INFO)
