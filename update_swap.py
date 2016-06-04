@@ -91,7 +91,7 @@ def checkIfShouldUpdateSwapRate():
 			earnings = currentSwapPosition['earnings']
 			earningsAsString = '{0:f}'.format(earnings)
 			currentAmount = currentSwapPosition['amount']
-			if currentRate < maxProfitableRate:
+			if currentRate != maxProfitableRate:
 				logger.info('current rate: ' + str(currentRate) + ' not optimal. Changeing to: ' + str(maxProfitableRate))
 				closeSwapPosition(currentSwapPosition['id'])
 				logger.info('swap position ' + str(currentSwapPosition['id']) + ' earned: ' + earningsAsString + ' with amount: ' + str(currentAmount))
