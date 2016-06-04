@@ -27,8 +27,9 @@ configFile.close()
 sleepTimeBetweenChecks = int(config['sleep_between_checks_in_seconds'])
 publicKey = str(config['public_api_key'])
 secretKey = str(config['secret_api_key'])
+offsetFromCutoff = float(config['offset_from_cuttof'])
 
-logger.info('SleepTime: ' + str(sleepTimeBetweenChecks) + ' PublicKey: ' + publicKey + ' SecretKey: ' + secretKey)
+logger.info('SleepTime: ' + str(sleepTimeBetweenChecks) + ' PublicKey: ' + publicKey + ' SecretKey: ' + secretKey + ' cutoff_ofset: ' + str(offsetFromCutoff))
 
 def mergeTwoDicts(x, y):
 	z = x.copy()
@@ -74,9 +75,12 @@ def openSwapPosition(amount, rate):
 
 def checkIfShouldUpdateSwapRate():
 	totalEarnings = 0
+
 	while True:
 		try:
 			currentCutOff = getCurrentCutOff()
+			logger.info('Current cutoff ' + str(currentCutOff))
+
 			currentSwapPositions = bitMarketPlApiCall('swapList', { 'currency': 'BTC' }).json()['data']
 			if len(currentSwapPositions) == 0:
 				logger.warn('No swap position to maximize, create a position.')
@@ -85,20 +89,25 @@ def checkIfShouldUpdateSwapRate():
 
 			currentSwapPosition = currentSwapPositions[0]
 
-			maxProfitableRate = currentCutOff - 0.01
 
 			currentRate = currentSwapPosition['rate']
 			earnings = currentSwapPosition['earnings']
 			earningsAsString = '{0:f}'.format(earnings)
 			currentAmount = currentSwapPosition['amount']
-			if currentRate != maxProfitableRate:
-				logger.info('current rate: ' + str(currentRate) + ' not optimal. Changeing to: ' + str(maxProfitableRate))
+
+			shouldUpdateRate = currentRate >= currentCutOff
+
+			if shouldUpdateRate:
+				newRate = currentCutOff - offsetFromCutoff
+
+				logger.info('current rate: ' + str(currentRate) + ' is not ok. Changeing to: ' + str(newRate))
 				closeSwapPosition(currentSwapPosition['id'])
+
 				logger.info('swap position ' + str(currentSwapPosition['id']) + ' earned: ' + earningsAsString + ' with amount: ' + str(currentAmount))
-				openSwapPosition(currentAmount + earnings, maxProfitableRate)
+				openSwapPosition(currentAmount + earnings, newRate)
 				totalEarnings = totalEarnings + earnings
 			else:
-				logger.info('current rate: ' + str(currentRate) + ' is optimal. Earnings: ' + earningsAsString + ' BTC. Total earnings: ' + '{0:f}'.format(totalEarnings + earnings))
+				logger.info('current rate: ' + str(currentRate) + ' is ok. Earnings: ' + earningsAsString + ' BTC. Total earnings: ' + '{0:f}'.format(totalEarnings + earnings))
 
 		except Exception as ex:
 			logger.error(ex)
