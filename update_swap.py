@@ -81,6 +81,7 @@ def openSwapPosition(amount, rate):
 
 def checkIfShouldUpdateSwapRate():
 	totalEarnings = 0
+	stableCount = 0
 	previousCutOff = Decimal('-1')
 
 	while True:
@@ -107,8 +108,13 @@ def checkIfShouldUpdateSwapRate():
 			diffFromPreviousCutoff = previousCutOff - currentCutOff
 
 			weAreNotEarning = currentRate >= currentCutOff
-			cutoffRateIsStable = diffFromPreviousCutoff < Decimal('0.01')
-			weCouldEarnMore = (currentCutOff - currentRate) >= Decimal('0.5') and cutoffRateIsStable
+
+			if diffFromPreviousCutoff < Decimal('0.01'):
+				stableCount = stableCount + 1
+			else:
+				stableCount = 0
+
+			weCouldEarnMore = (currentCutOff - currentRate) >= Decimal('0.5') and stableCount > 10
 			logger.debug('diffFromPreviousCutoff: ' + str(diffFromPreviousCutoff) + ' notEarning: ' + str(weAreNotEarning) + ' couldEarnMore: ' + str(weCouldEarnMore))
 
 			if weAreNotEarning or weCouldEarnMore:
