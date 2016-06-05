@@ -4,7 +4,6 @@ import hmac
 import hashlib
 import time
 import simplejson as json
-import traceback
 import logging
 from decimal import Decimal
 from pprint import pprint
@@ -132,8 +131,7 @@ def checkIfShouldUpdateSwapRate():
 			previousCutOff = currentCutOff
 
 		except Exception as ex:
-			logger.error(ex)
-			traceback.print_exc()
+			logger.error(ex, exc_info=True)
 
 		time.sleep(sleepTimeBetweenChecks)
 
