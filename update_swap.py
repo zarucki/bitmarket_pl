@@ -45,7 +45,7 @@ def mergeTwoDicts(x, y):
 def getCurrentCutOff():
 	swapStateJson = json.loads(requests.get('https://www.bitmarket.pl/json/swapBTC/swap.json').text, use_decimal = True)
 	cutoff = swapStateJson['cutoff']
-	logger.debug('demand = ' + swapStateJson['demand'])
+	logger.debug('demand = ' + str(swapStateJson['demand']))
 	return cutoff
 
 def bitMarketPlApiCall(method, params = {}):
