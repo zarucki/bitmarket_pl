@@ -131,7 +131,8 @@ def checkIfShouldUpdateSwapRate():
 				time.sleep(2)
 
 				logger.info('swap position ' + str(currentSwapPosition['id']) + ' earned: ' + earningsAsString + ' with amount: ' + str(currentAmount))
-				openSwapPosition(currentAmount + earnings, newRate)
+				newAmount = currentAmount + earnings - Decimal('0.00000005') # sometimes API returns not precise values, giving wrong value will leave us with no position opened
+				openSwapPosition(newAmount, newRate)
 				totalEarnings = totalEarnings + earnings
 			else:
 				logger.info('current rate: ' + str(currentRate) + ' is ok. Earnings: ' + earningsAsString + ' BTC. Total earnings: ' + '{0:f}'.format(totalEarnings + earnings))
