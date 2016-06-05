@@ -10,9 +10,9 @@ from pprint import pprint
 
 def setupLogger():
 	logger = logging.getLogger('update_swap')
-	logger.setLevel(logging.INFO)
+	logger.setLevel(logging.DEBUG)
 	fh = logging.FileHandler('update_swap.log')
-	fh.setLevel(logging.INFO)
+	fh.setLevel(logging.DEBUG)
 	ch = logging.StreamHandler()
 	ch.setLevel(logging.INFO)
 	formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
@@ -44,7 +44,7 @@ def mergeTwoDicts(x, y):
 def getCurrentCutOff():
 	swapStateJson = requests.get('https://www.bitmarket.pl/json/swapBTC/swap.json').json()
 	cutoff = swapStateJson['cutoff']
-	#demand = swapStateJson['demand']
+	logger.debug('demand = ' + swapStateJson['demand'])
 	return cutoff
 
 def bitMarketPlApiCall(method, params = {}):
@@ -59,11 +59,12 @@ def bitMarketPlApiCall(method, params = {}):
 		'API-Hash': hmac.new(secretKey, postParamsAsString, hashlib.sha512).hexdigest()
 	}
 
+	logger.debug("Request data: " + postParamsAsString + " headers: " + str(postHeaders))
 	request_response = requests.post('https://www.bitmarket.pl/api2/', data = postParamsAsString, headers = postHeaders)
-	logger.debug(request_response)
+
 	if request_response.status_code == 200:
-		asJson = request_response.json()
-		#print 'success', asJson['limit'], '; serverTime =', asJson['time']
+		logger.debug(request_response)
+		logger.debug(request_response.text)
 	else:
 		logger.info(request_response)
 		logger.info(request_response.text)
