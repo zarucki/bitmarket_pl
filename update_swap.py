@@ -3,9 +3,10 @@ import requests
 import hmac
 import hashlib
 import time
-import json
+import simplejson as json
 import traceback
 import logging
+from decimal import Decimal
 from pprint import pprint
 
 def setupLogger():
@@ -25,13 +26,13 @@ def setupLogger():
 logger = setupLogger()
 
 configFile = open('config.json', 'r')
-config = json.load(configFile)
+config = json.load(configFile, use_decimal = True)
 configFile.close()
 
-sleepTimeBetweenChecks = int(config['sleep_between_checks_in_seconds'])
+sleepTimeBetweenChecks = config['sleep_between_checks_in_seconds']
 publicKey = str(config['public_api_key'])
 secretKey = str(config['secret_api_key'])
-offsetFromCutoff = float(config['offset_from_cuttof'])
+offsetFromCutoff = config['offset_from_cuttof']
 
 logger.info('SleepTime: ' + str(sleepTimeBetweenChecks) + ' PublicKey: ' + publicKey + ' SecretKey: ' + secretKey + ' cutoff_ofset: ' + str(offsetFromCutoff))
 
@@ -42,7 +43,7 @@ def mergeTwoDicts(x, y):
 	return z
 
 def getCurrentCutOff():
-	swapStateJson = requests.get('https://www.bitmarket.pl/json/swapBTC/swap.json').json()
+	swapStateJson = json.loads(requests.get('https://www.bitmarket.pl/json/swapBTC/swap.json').text, use_decimal = True)
 	cutoff = swapStateJson['cutoff']
 	logger.debug('demand = ' + swapStateJson['demand'])
 	return cutoff
@@ -81,13 +82,17 @@ def openSwapPosition(amount, rate):
 
 def checkIfShouldUpdateSwapRate():
 	totalEarnings = 0
+	previousCutOff = Decimal('-1')
 
 	while True:
 		try:
 			currentCutOff = getCurrentCutOff()
-			logger.info('Current cutoff ' + str(currentCutOff))
+			if previousCutOff < Decimal('0'):
+				previousCutOff = currentCutOff
 
-			currentSwapPositions = bitMarketPlApiCall('swapList', { 'currency': 'BTC' }).json()['data']
+			logger.info('Current cutoff ' + str(currentCutOff) + ' Previous cutoff ' + str(previousCutOff))
+
+			currentSwapPositions = json.loads(bitMarketPlApiCall('swapList', { 'currency': 'BTC' }).text, use_decimal = True)['data']
 			if len(currentSwapPositions) == 0:
 				logger.warn('No swap position to maximize, create a position.')
 				time.sleep(sleepTimeBetweenChecks)
@@ -101,10 +106,15 @@ def checkIfShouldUpdateSwapRate():
 			earningsAsString = '{0:f}'.format(earnings)
 			currentAmount = currentSwapPosition['amount']
 
-			shouldUpdateRate = currentRate >= currentCutOff
+			weAreNotEarning = currentRate >= currentCutOff
+			weCouldEarnMore = (currentCutOff - currentRate) >= Decimal('0.5')
 
-			if shouldUpdateRate:
-				newRate = currentCutOff - offsetFromCutoff
+			if weAreNotEarning or weCouldEarnMore:
+				if weCouldEarnMore:
+					newRate = currentCutOff - offsetFromCutoff
+				else:
+					diffFromPreviousCutoff = previousCutOff - currentCutOff
+					newRate = currentCutOff - max(diffFromPreviousCutoff * 5, offsetFromCutoff)
 
 				logger.info('current rate: ' + str(currentRate) + ' is not ok. Changeing to: ' + str(newRate))
 				closeSwapPosition(currentSwapPosition['id'])
@@ -116,6 +126,8 @@ def checkIfShouldUpdateSwapRate():
 				totalEarnings = totalEarnings + earnings
 			else:
 				logger.info('current rate: ' + str(currentRate) + ' is ok. Earnings: ' + earningsAsString + ' BTC. Total earnings: ' + '{0:f}'.format(totalEarnings + earnings))
+			
+			previousCutOff = currentCutOff
 
 		except Exception as ex:
 			logger.error(ex)
