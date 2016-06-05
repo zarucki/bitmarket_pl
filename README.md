@@ -1,7 +1,7 @@
 # bitmarket_pl utilities
 Currently only python script which regulary checks what is the cut off swap rate, and updates position accordingly so your position earns as much money as possible.
 
-Python 2.7. At the moment only one external dependency `simplejson`.
+Python 2.7. At the moment only one external dependency `simplejson`. You should be able to install it using `easy_install`:
 ```bash
 easy_install simplejson
 ```
