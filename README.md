@@ -9,3 +9,6 @@ easy_install simplejson
 Before running you need to rename `config.json.example` to `config.json` and fill correctly api keys from bitmarket.pl.
 
 There's also convenience script for running script with `nohup`.
+
+TODOs:
+* detect failure when opening swap (probably due to incorrect amount + earnings calculation exceeding real balance) and fallback to amount without earnings.
