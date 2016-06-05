@@ -105,15 +105,17 @@ def checkIfShouldUpdateSwapRate():
 			earnings = currentSwapPosition['earnings']
 			earningsAsString = '{0:f}'.format(earnings)
 			currentAmount = currentSwapPosition['amount']
+			diffFromPreviousCutoff = previousCutOff - currentCutOff
 
 			weAreNotEarning = currentRate >= currentCutOff
-			weCouldEarnMore = (currentCutOff - currentRate) >= Decimal('0.5')
+			cutoffRateIsStable = diffFromPreviousCutoff < Decimal('0.01')
+			weCouldEarnMore = (currentCutOff - currentRate) >= Decimal('0.5') and cutoffRateIsStable
+			logger.debug('diffFromPreviousCutoff: ' + str(diffFromPreviousCutoff) + ' notEarning: ' + str(weAreNotEarning) + ' couldEarnMore: ' + str(weCouldEarnMore))
 
 			if weAreNotEarning or weCouldEarnMore:
 				if weCouldEarnMore:
 					newRate = currentCutOff - offsetFromCutoff
 				else:
-					diffFromPreviousCutoff = previousCutOff - currentCutOff
 					newRate = currentCutOff - max(diffFromPreviousCutoff * 5, offsetFromCutoff)
 
 				logger.info('current rate: ' + str(currentRate) + ' is not ok. Changeing to: ' + str(newRate))
