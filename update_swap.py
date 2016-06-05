@@ -62,12 +62,12 @@ def bitMarketPlApiCall(method, params = {}):
 	logger.debug("Request data: " + postParamsAsString + " headers: " + str(postHeaders))
 	request_response = requests.post('https://www.bitmarket.pl/api2/', data = postParamsAsString, headers = postHeaders)
 
-	if request_response.status_code == 200:
+	if request_response.status_code == 200 and not ('error' in request_response.text):
 		logger.debug(request_response)
 		logger.debug(request_response.text)
 	else:
-		logger.info(request_response)
-		logger.info(request_response.text)
+		logger.error(request_response)
+		logger.error(request_response.text)
 
 	return request_response
 
@@ -114,8 +114,10 @@ def checkIfShouldUpdateSwapRate():
 			if weAreNotEarning or weCouldEarnMore:
 				if weCouldEarnMore:
 					newRate = currentCutOff - offsetFromCutoff
+					logger.info('let\' increase rate from ' + str(currentCutOff) + ' to ' + str(newRate))
 				else:
 					newRate = currentCutOff - max(diffFromPreviousCutoff * 5, offsetFromCutoff)
+					logger.info('let\' decrease rate from ' + str(currentCutOff) + ' to ' + str(newRate))
 
 				logger.info('current rate: ' + str(currentRate) + ' is not ok. Changeing to: ' + str(newRate))
 				closeSwapPosition(currentSwapPosition['id'])
