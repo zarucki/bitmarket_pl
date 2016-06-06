@@ -73,11 +73,11 @@ def bitMarketPlApiCall(method, params = {}):
 
 def closeSwapPosition(id):
 	logger.info('closing swap position: ' + str(id))
-	logger.debug(bitMarketPlApiCall('swapClose', { 'id': id, 'currency': 'BTC' }).text)
+	bitMarketPlApiCall('swapClose', { 'id': id, 'currency': 'BTC' })
 
 def openSwapPosition(amount, rate):
 	logger.info('Opening new swap position. Amount: ' + str(amount) + ' BTC, Rate: ' + str(rate) + ' %')
-	logger.debug(bitMarketPlApiCall('swapOpen', { 'amount': amount, 'rate': rate, 'currency': 'BTC' }))
+	bitMarketPlApiCall('swapOpen', { 'amount': amount, 'rate': rate, 'currency': 'BTC' })
 
 def checkIfShouldUpdateSwapRate():
 	totalEarnings = 0
